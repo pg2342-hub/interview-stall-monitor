@@ -7,7 +7,7 @@ name = "interview-stall-monitor"
 version = "0.1.0"
 description = "Find stalled interview-scheduling threads, track adoption, and write a weekly value report."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = {text = "MIT"}
 dependencies = []
 
@@ -19,7 +19,7 @@ packages = ["stallmon"]
 
 [tool.ruff]
 line-length = 130
-target-version = "py39"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B"]

@@ -20,7 +20,7 @@ pip install -e .
 python -m stallmon report data/threads.jsonl data/users.json --as-of 2026-11-20T17:00:00Z --out reports
 ```
 
-It writes `report.md` (for an email or a check-in doc), `report.html`, `report.json` and `stalls.csv`. Python 3.9+, no dependencies.
+It writes `report.md` (for an email or a check-in doc), `report.html`, `report.json` and `stalls.csv`. Python 3.10+, no dependencies.
 
 The sample in `data/` is a made-up search firm: 18 seats in two practices (one live from week one, the second from week three) and 168 synthetic threads. `scripts/make_sample.py` regenerates it. The reply-time mix is loosely shaped like a public executive-search scheduling benchmark, and a few hand-written threads make sure every flag type shows up. None of it is real customer data.
 
@@ -68,7 +68,7 @@ The rules are graded against 28 hand-labeled threads (11 stalled, 8 at risk, 9 t
 - 7 of 8 at-risk threads (a miss holds at partial)
 - 27 of 28 overall
 
-CI runs ruff, the tests on Python 3.9 and 3.12, the sample report, and the gate on every push. It also checks that the gate blocks a monitor that never flags anything. Current result: GO, 28 of 28.
+CI runs ruff, the tests on Python 3.10 and 3.12, the sample report, and the gate on every push. It also checks that the gate blocks a monitor that never flags anything. Current result: GO, 28 of 28.
 
 ## License
 
