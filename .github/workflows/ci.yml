@@ -24,10 +24,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: pip install -e .
       - name: Go-live gate on 28 labeled threads
         id: gate
         uses: pg2342-hub/golive-gate@main
+        env:
+          PYTHONPATH: ${{ github.workspace }}
         with:
           config: evals/golive.yml
           strict: "true"
@@ -35,6 +36,8 @@ jobs:
         run: |
           pip install "git+https://github.com/pg2342-hub/golive-gate"
           cd evals
-          if PYTHONPATH=.. golive run golive.yml --agent agent:flag_nothing --out /tmp/bad; then
-            echo "gate passed a monitor that flags nothing" && exit 1
+          PYTHONPATH=.. golive run golive.yml --agent agent:flag_nothing --out /tmp/bad && rc=0 || rc=$?
+          echo "flag_nothing exit code: $rc"
+          if [ "$rc" != "1" ]; then
+            echo "expected a no-go (exit 1) for a monitor that flags nothing" && exit 1
           fi
