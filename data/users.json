@@ -1,0 +1,94 @@
+{
+ "users": [
+  {
+   "name": "Kendall Foster",
+   "practice": "Consumer",
+   "live_from": "2026-10-25T17:00:00Z"
+  },
+  {
+   "name": "Devon Tate",
+   "practice": "Consumer",
+   "live_from": "2026-10-25T17:00:00Z"
+  },
+  {
+   "name": "Morgan Carver",
+   "practice": "Consumer",
+   "live_from": "2026-10-25T17:00:00Z"
+  },
+  {
+   "name": "Sage Ortiz",
+   "practice": "Consumer",
+   "live_from": "2026-10-25T17:00:00Z"
+  },
+  {
+   "name": "Blake Ellis",
+   "practice": "Consumer",
+   "live_from": "2026-10-25T17:00:00Z"
+  },
+  {
+   "name": "Blake Tate",
+   "practice": "Consumer",
+   "live_from": "2026-10-25T17:00:00Z"
+  },
+  {
+   "name": "Reese Pryce",
+   "practice": "Consumer",
+   "live_from": "2026-10-25T17:00:00Z"
+  },
+  {
+   "name": "Casey Irving",
+   "practice": "Consumer",
+   "live_from": "2026-10-25T17:00:00Z"
+  },
+  {
+   "name": "Logan Hayes",
+   "practice": "Enterprise",
+   "live_from": "2026-11-08T17:00:00Z"
+  },
+  {
+   "name": "Riley Vance",
+   "practice": "Enterprise",
+   "live_from": "2026-11-08T17:00:00Z"
+  },
+  {
+   "name": "Blake Keane",
+   "practice": "Enterprise",
+   "live_from": "2026-11-08T17:00:00Z"
+  },
+  {
+   "name": "Quinn Wells",
+   "practice": "Enterprise",
+   "live_from": "2026-11-08T17:00:00Z"
+  },
+  {
+   "name": "Finley Keane",
+   "practice": "Enterprise",
+   "live_from": "2026-11-08T17:00:00Z"
+  },
+  {
+   "name": "Avery Wells",
+   "practice": "Enterprise",
+   "live_from": "2026-11-08T17:00:00Z"
+  },
+  {
+   "name": "Casey Ellis",
+   "practice": "Enterprise",
+   "live_from": "2026-11-08T17:00:00Z"
+  },
+  {
+   "name": "Parker Carver",
+   "practice": "Enterprise",
+   "live_from": "2026-11-08T17:00:00Z"
+  },
+  {
+   "name": "Morgan Pryce",
+   "practice": "Enterprise",
+   "live_from": "2026-11-08T17:00:00Z"
+  },
+  {
+   "name": "Blake Reid",
+   "practice": "Enterprise",
+   "live_from": "2026-11-08T17:00:00Z"
+  }
+ ]
+}

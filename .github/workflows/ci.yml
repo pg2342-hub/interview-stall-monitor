@@ -1,0 +1,40 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install -e ".[dev]"
+      - run: ruff check .
+      - run: pytest -q
+      - name: Sample report builds
+        run: python -m stallmon report data/threads.jsonl data/users.json --as-of 2026-11-20T17:00:00Z --out reports
+
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install -e .
+      - name: Go-live gate on 28 labeled threads
+        id: gate
+        uses: pg2342-hub/golive-gate@main
+        with:
+          config: evals/golive.yml
+          strict: "true"
+      - name: The gate must block a monitor that misses stalled threads
+        run: |
+          pip install "git+https://github.com/pg2342-hub/golive-gate"
+          cd evals
+          if PYTHONPATH=.. golive run golive.yml --agent agent:flag_nothing --out /tmp/bad; then
+            echo "gate passed a monitor that flags nothing" && exit 1
+          fi

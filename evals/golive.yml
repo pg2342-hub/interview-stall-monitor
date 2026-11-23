@@ -1,0 +1,6 @@
+name: Stall monitor
+cases: cases.yml
+checks: checks:checks
+agent: agent:monitor
+gate: gate.yml
+runs: 1                      # the rules are deterministic, so one run is the whole story

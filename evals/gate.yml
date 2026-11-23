@@ -1,0 +1,16 @@
+gate:
+  name: Stall monitor go-live gate
+  max_critical_failures: 0      # a missed stalled thread blocks go-live
+  rules:
+    - name: stalled threads
+      group: stalled
+      min_pass: all
+    - name: false alarms
+      group: ok
+      min_pass: 8               # at most 1 false alarm out of 9
+    - name: at-risk threads
+      group: at_risk
+      min_pass: 7
+      on_fail: partial          # a miss here holds rollout at partial, not no-go
+    - name: overall
+      min_pass: 27
