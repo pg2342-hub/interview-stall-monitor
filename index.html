@@ -1,46 +1,302 @@
-<!doctype html><html lang='en'><head>
+<!doctype html>
+<html lang="en">
+<head>
 <!-- demo-chrome --><meta name="theme-color" content="#f4f2ec"><link rel="icon" href="https://pranavgudise.dev/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="https://pranavgudise.dev/kit/demo.css"><!-- /demo-chrome -->
-<meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Interview stall monitor</title><style>
-main{padding-bottom:24px}
-h1{margin-top:40px}
-.sub{font:400 13px/1.4 var(--mono);letter-spacing:.02em;color:var(--ink-2)}
-.lead{font-size:18px;color:var(--ink);max-width:42em;margin:16px 0 0}
-.note{color:var(--ink-2);font-size:14px;max-width:46em}
-.demo-note{background:var(--tint-2);border-radius:12px;padding:14px 18px;margin-top:40px;font-size:15px;color:var(--ink-2)}
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-top:32px}
-.tile{border:1px solid var(--rule);border-radius:16px;padding:16px 18px}
-.tile b{display:block;font:400 32px/1.15 var(--serif);font-weight:400;font-variant-numeric:tabular-nums}
-.tile span{color:var(--ink-2);font-size:14px}
-.wrap{overflow-x:auto;margin:16px 0}
-td .pill{display:inline-flex;align-items:center;min-height:24px;padding:0 10px;border-radius:999px;border:1px solid var(--ink);
-font:500 12px/1 var(--mono);letter-spacing:.03em}
-td .pill.stalled,td .pill.red{background:var(--ink);color:var(--paper)}
-td .pill.green{background:var(--green-wash);border-color:var(--green-wash);color:var(--green)}
-td .pill.yellow{border-style:dashed}
-.bar{height:10px;background:var(--tint-1);border-radius:999px;overflow:hidden;min-width:80px;margin-top:6px}
-.bar i{display:block;height:100%;background:var(--green);border-radius:999px}
-</style></head><body>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interview stall monitor</title>
+<meta name="description" content="The weekly scheduling report for one search firm account: meetings booked, hours handed back, adoption by practice, and the stalled interview threads a person needs to act on.">
+<style>
+.head h1{margin:40px 0 10px}
+.head .meta{margin:0;font:400 14px/1.4 var(--mono);color:var(--ink-2);letter-spacing:.02em}
+.head .lead{max-width:42em;margin:14px 0 0}
+.num,.board b,.stat b{font-variant-numeric:tabular-nums}
+/* report card */
+.board{margin:32px 0 0;border:1px solid var(--rule);border-radius:16px;background:#fbfaf6;overflow:hidden;scroll-margin-top:24px}
+.vline{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 24px;align-items:center;padding:22px 24px 6px}
+.vline h2{all:unset;display:block;font:400 34px/1.1 var(--serif)}
+.vline p{grid-column:1/-1;margin:0;font-size:17px;max-width:48em}
+.gate{justify-self:end;display:inline-flex;align-items:center;min-height:34px;padding:0 16px;border-radius:999px;font:500 13px/1 var(--mono);letter-spacing:.06em;white-space:nowrap;background:var(--ink);color:var(--paper)}
+.tally{padding:18px 24px 22px}
+.stack{display:flex;gap:4px;height:22px}
+.stack i{flex:1 1 0;border-radius:4px}
+.k-stalled{background:var(--ink)}
+.k-at_risk{background:repeating-linear-gradient(135deg,var(--ink) 0 1.5px,transparent 1.5px 6px);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.k-ok{background:var(--green)}
+.tally .cap{margin:0 0 10px;font-size:14px;color:var(--ink-2)}
+.counts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:14px}
+.counts div{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:10px;align-items:baseline}
+.counts b{grid-row:span 2;font:400 36px/1 var(--serif)}
+.counts .lab{display:flex;align-items:center;gap:8px;font:500 13px/1.3 var(--mono);letter-spacing:.04em}
+.counts .lab i{width:12px;height:12px;border-radius:3px;flex:none}
+.counts span:last-child{color:var(--ink-2);font-size:14px;line-height:1.35}
+.week{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));border-top:1px solid var(--rule)}
+.week div{padding:16px 18px;font-size:13.5px;color:var(--ink-2);line-height:1.35}
+.week div+div{border-left:1px solid var(--rule)}
+.week b{display:block;font:400 30px/1.1 var(--serif);color:var(--ink);margin-bottom:4px}
+.week b small{font-size:18px;color:var(--ink-2)}
+.trend{border-top:1px solid var(--rule);padding:18px 24px 20px;background:var(--paper)}
+.trend h3{margin:0 0 4px;font:400 20px/1.2 var(--serif)}
+.trend .hint{margin:0 0 12px;color:var(--ink-2);font-size:14px}
+.sm{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.sm figure{margin:0}
+.sm figcaption{font-size:13.5px;color:var(--ink-2);display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.sm figcaption b{font:400 22px/1 var(--serif);color:var(--ink)}
+.sm svg{display:block;width:100%;height:auto;margin-top:6px;overflow:visible}
+.sm svg text{font:400 11px var(--mono);fill:var(--ink-2)}
+.sm svg text.v{fill:var(--ink);font-size:11.5px}
+/* page body */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:56px;align-items:start}
+.content h2{scroll-margin-top:24px}
+.side{position:sticky;top:24px;margin-top:64px;display:grid;gap:22px;font-size:14px;color:var(--ink-2)}
+.side h3{margin:0 0 6px;font:500 13px/1.3 var(--sans);color:var(--ink)}
+.side p{margin:0}
+.side nav a{display:block;padding:5px 0;color:var(--ink-2);text-decoration:none;border-bottom:1px solid var(--rule-soft)}
+.side nav a:hover{color:var(--ink)}
+.side pre{font-size:12px;margin:6px 0 0}
+.note{color:var(--ink-2);font-size:15px;max-width:46em;margin-top:14px}
+.seg{display:flex;width:fit-content;max-width:100%;gap:2px;padding:3px;border:1px solid var(--rule);border-radius:999px;background:var(--paper);margin:0 0 16px}
+.seg button{min-height:38px;padding:0 18px;border:0;border-radius:999px;background:transparent;color:var(--ink-2);font:500 15px/1 var(--sans);cursor:pointer;white-space:nowrap}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-checked=true]{background:var(--ink);color:var(--paper)}
+.sev{display:inline-flex;align-items:center;justify-self:start;min-height:24px;padding:0 9px;border-radius:999px;border:1px solid var(--ink);font:500 11.5px/1 var(--mono);letter-spacing:.03em;white-space:nowrap}
+.sev.stalled{background:var(--ink);color:var(--paper)}
+.sev.at_risk{border-style:dashed}
+/* needs a person: one card per action */
+.team{border:1px solid var(--rule);border-radius:16px;background:#fbfaf6;margin:0 0 12px;overflow:hidden}
+.team-h{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 16px;padding:14px 20px;border-bottom:1px solid var(--rule)}
+.team-h h3{margin:0;font:400 21px/1.2 var(--serif)}
+.team-h p{margin:0;display:flex;align-items:center;gap:12px;font-size:14px;color:var(--ink-2)}
+.todo{list-style:none;margin:0;padding:0 20px}
+.todo li{display:grid;grid-template-columns:5.2em 11em minmax(0,1fr) 9em;gap:4px 14px;align-items:baseline;margin:0;padding:12px 0;border-top:1px solid var(--rule-soft)}
+.todo li:first-child{border-top:0}
+.todo .id{font:400 13px/1.4 var(--mono);color:var(--ink-2)}
+.todo .who b{display:block;font-weight:500}
+.todo .who span{font-size:13.5px;color:var(--ink-2)}
+.todo .wait{text-align:right;font:400 13px/1.4 var(--mono);color:var(--ink-2)}
+/* adoption */
+.prac{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.pcard{border:1px solid var(--rule);border-radius:16px;background:#fbfaf6;padding:16px 20px}
+.pcard .top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.pcard h3{margin:0;font:400 22px/1.2 var(--serif)}
+.health{display:inline-flex;align-items:center;min-height:26px;padding:0 11px;border-radius:999px;border:1px solid var(--ink);font:500 12px/1 var(--mono);letter-spacing:.04em}
+.health.green{background:var(--green-wash);border-color:var(--green-wash);color:var(--green)}
+.health.yellow{border-style:dashed}
+.health.red{background:var(--ink);color:var(--paper)}
+.seats{display:flex;flex-wrap:wrap;gap:4px;margin:14px 0 6px}
+.seats i{width:18px;height:18px;border-radius:4px;background:var(--green)}
+.seats i.off{background:transparent;box-shadow:inset 0 0 0 1.5px var(--ink-2)}
+.pcard .cap{margin:0;font-size:14px;color:var(--ink-2)}
+.pnums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--rule-soft);font-size:13.5px;color:var(--ink-2)}
+.pnums b{display:block;font:400 24px/1.1 var(--serif);color:var(--ink)}
+.done{border:1px solid var(--rule);border-radius:16px;background:var(--green-wash);color:var(--green);padding:16px 20px;margin:0}
+@media (max-width:1000px){
+ .layout{grid-template-columns:minmax(0,1fr);gap:0}
+ .side{position:static;margin-top:48px}
+ .week{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .week div:nth-child(4){border-left:0}
+ .week div:nth-child(n+4){border-top:1px solid var(--rule)}
+ .sm{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:700px){
+ .vline,.tally,.trend{padding-left:16px;padding-right:16px}
+ .vline h2{font-size:28px}
+ .vline p{font-size:16px}
+ .counts{grid-template-columns:1fr;gap:10px}
+ .counts b{font-size:30px;min-width:1.1em}
+ .week{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .week div{padding:14px 16px}
+ .week div:nth-child(n){border-left:0;border-top:1px solid var(--rule)}
+ .week div:nth-child(even){border-left:1px solid var(--rule)}
+ .week div:nth-child(-n+2){border-top:0}
+ .week b{font-size:26px}
+ .sm{gap:16px 14px}
+ .prac{grid-template-columns:1fr}
+ .team-h,.todo{padding-left:16px;padding-right:16px}
+ .todo li{grid-template-columns:5.2em minmax(0,1fr)}
+ .todo .msg,.todo .wait{grid-column:1/-1}
+ .todo .wait{text-align:left}
+ #quiet table{min-width:520px}
+ .seg button{padding:0 14px;font-size:14px}
+}
+</style>
+</head>
+<body>
 <!-- demo-chrome --><header class="demo-top"><a class="demo-brand" href="https://pranavgudise.dev/"><svg class="demo-mark" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.25"/><g class="n"><path class="f" d="M15.5 8.5 L 13.4 13.4 L 8.5 15.5 L 10.6 10.6 Z"/></g><circle class="p" cx="12" cy="12" r=".7"/></svg><span>Pranav Gudise</span></a><a class="pill" href="https://github.com/pg2342-hub/interview-stall-monitor">Code on GitHub</a></header><!-- /demo-chrome -->
+
 <main>
-<p class='note demo-note'>
-<b>Demo.</b> This is the weekly report <code>stallmon</code> writes for one customer account, run on a made-up
-search firm (18 seats in two practices, 168 synthetic scheduling threads over four weeks). Nothing here is real
-customer data. <a href='gate/index.html'>Go-live gate report (28 labeled threads)</a></p>
-<h1>Weekly scheduling report: Example Search Partners</h1><div class='sub'>Week ending Nov 20, 2026</div><p class='lead'>45 meetings booked and 14.2 hours of coordination handed back this week; 8 stalled and 6 at-risk threads need a person.</p><div class='tiles'><div class='tile'><b>45</b><span>Meetings booked</span></div><div class='tile'><b>14.2</b><span>Hours handed back</span></div><div class='tile'><b>10.8</b><span>Median hours to book</span></div><div class='tile'><b>15/18</b><span>Active users</span></div><div class='tile'><b>8</b><span>Stalled</span></div><div class='tile'><b>6</b><span>At risk</span></div></div><h2>Needs a person</h2><div class='wrap'><table><tr><th>Flag</th><th>Thread</th><th>Owner</th><th>Why</th><th>Waiting</th><th>Next step</th></tr><tr><td><span class='pill stalled'>stalled</span></td><td>T-0111<br><span class='note'>Candidate interview, Consumer</span></td><td>Reese Pryce</td><td>No reply after follow-ups</td><td>480h on candidate</td><td>3 follow-ups to the candidate are unanswered after 480h. Ask Reese Pryce to call or text the candidate directly.</td></tr><tr><td><span class='pill stalled'>stalled</span></td><td>T-0051<br><span class='note'>Candidate interview, Consumer</span></td><td>Morgan Carver</td><td>No reply after follow-ups</td><td>339h on candidate</td><td>3 follow-ups to the candidate are unanswered after 339h. Ask Morgan Carver to call or text the candidate directly.</td></tr><tr><td><span class='pill stalled'>stalled</span></td><td>T-0012<br><span class='note'>Candidate interview, Consumer</span></td><td>Kendall Foster</td><td>No reply after follow-ups</td><td>87h on candidate</td><td>3 follow-ups to the candidate are unanswered after 87h. Ask Kendall Foster to call or text the candidate directly.</td></tr><tr><td><span class='pill stalled'>stalled</span></td><td>T-0069<br><span class='note'>Client panel, Consumer</span></td><td>Sage Ortiz</td><td>No reply after follow-ups</td><td>67h on client</td><td>2 follow-ups to the client are unanswered after 67h. Ask Sage Ortiz to call or text the client directly.</td></tr><tr><td><span class='pill stalled'>stalled</span></td><td>T-0019<br><span class='note'>Candidate interview, Consumer</span></td><td>Kendall Foster</td><td>No reply after follow-ups</td><td>49h on candidate</td><td>2 follow-ups to the candidate are unanswered after 49h. Ask Kendall Foster to call or text the candidate directly.</td></tr><tr><td><span class='pill stalled'>stalled</span></td><td>T-0153<br><span class='note'>Candidate interview, Enterprise</span></td><td>Casey Ellis</td><td>No reply after follow-ups</td><td>48h on candidate</td><td>2 follow-ups to the candidate are unanswered after 48h. Ask Casey Ellis to call or text the candidate directly.</td></tr><tr><td><span class='pill stalled'>stalled</span></td><td>T-9002<br><span class='note'>Candidate interview, Enterprise</span></td><td>Blake Keane</td><td>Follow-up cadence missed</td><td>40h on candidate</td><td>Nothing has gone to the candidate in 40h, so the follow-up cadence was missed. Check the thread for a parsing or channel issue, reproduce it, and send engineering the thread id.</td></tr><tr><td><span class='pill stalled'>stalled</span></td><td>T-9001<br><span class='note'>Client panel, Consumer</span></td><td>Devon Tate</td><td>Waiting on the firm</td><td>31h on internal</td><td>Waiting 31h on Devon Tate. Nudge them and offer to confirm the slot already proposed.</td></tr><tr><td><span class='pill'>at risk</span></td><td>T-0164<br><span class='note'>Client panel, Enterprise</span></td><td>Morgan Pryce</td><td>Slow reply</td><td>43h on client</td><td>Waiting 43h on the client. Watch it; the next follow-up is due.</td></tr><tr><td><span class='pill'>at risk</span></td><td>T-0131<br><span class='note'>Candidate interview, Enterprise</span></td><td>Quinn Wells</td><td>Slow reply</td><td>33h on candidate</td><td>Waiting 33h on the candidate. Watch it; the next follow-up is due.</td></tr><tr><td><span class='pill'>at risk</span></td><td>T-0157<br><span class='note'>Candidate interview, Enterprise</span></td><td>Parker Carver</td><td>Slow reply</td><td>27h on candidate</td><td>Waiting 27h on the candidate. Watch it; the next follow-up is due.</td></tr><tr><td><span class='pill'>at risk</span></td><td>T-0117<br><span class='note'>Candidate interview, Enterprise</span></td><td>Logan Hayes</td><td>Slow reply</td><td>25h on candidate</td><td>Waiting 25h on the candidate. Watch it; the next follow-up is due.</td></tr><tr><td><span class='pill'>at risk</span></td><td>T-9003<br><span class='note'>Client panel, Consumer</span></td><td>Sage Ortiz</td><td>Long thread</td><td>23h on client</td><td>15 rounds and still open; cancellations run about 4x higher past 12 in a public search-scheduling benchmark. Suggest a quick call to lock a time.</td></tr><tr><td><span class='pill'>at risk</span></td><td>T-9004<br><span class='note'>Candidate interview, Enterprise</span></td><td>Finley Keane</td><td>Client keeps moving it</td><td>20h on candidate</td><td>The client has moved this 2 times. Give the candidate two firm backup slots so the next move does not restart the thread.</td></tr></table></div><p class='note'>Of the hours open threads have spent waiting: 97% outside the firm, 3% inside the firm.</p><h2>Adoption by practice</h2><div class='wrap'><table><tr><th>Practice</th><th>Active users</th><th></th><th>Threads this week</th><th>Open</th><th>Stalled</th><th>Health</th></tr><tr><td>Consumer</td><td>6 of 8</td><td><div class='bar'><i style='width:75%'></i></div></td><td>27</td><td>10</td><td>6</td><td><span class='pill yellow'>yellow</span></td></tr><tr><td>Enterprise</td><td>9 of 10</td><td><div class='bar'><i style='width:90%'></i></div></td><td>31</td><td>13</td><td>2</td><td><span class='pill green'>green</span></td></tr></table></div><h2>People to check in with</h2><div class='wrap'><table><tr><th>Name</th><th>Practice</th><th>Status</th><th>Live since</th><th>Last thread</th></tr><tr><td>Casey Irving</td><td>Consumer</td><td>never started</td><td>2026-10-25</td><td>-</td></tr><tr><td>Blake Reid</td><td>Enterprise</td><td>never started</td><td>2026-11-08</td><td>-</td></tr><tr><td>Reese Pryce</td><td>Consumer</td><td>gone quiet</td><td>2026-10-25</td><td>2026-11-02</td></tr></table></div><h2>Four-week trend</h2><div class='wrap'><table><tr><th>Week ending</th><th>Threads</th><th>Booked</th><th>Hours handed back</th><th>Active users</th></tr><tr><td>2026-10-30</td><td>28</td><td>14</td><td>4.5</td><td>7 of 8</td></tr><tr><td>2026-11-06</td><td>35</td><td>35</td><td>9.2</td><td>7 of 8</td></tr><tr><td>2026-11-13</td><td>47</td><td>41</td><td>12.5</td><td>15 of 18</td></tr><tr><td>2026-11-20</td><td>58</td><td>45</td><td>14.2</td><td>15 of 18</td></tr></table></div><p class='note'>Hours handed back counts 15 minutes per booked meeting and 15 per reschedule handled, the default in a public time-saved calculator for search firms. Swap in the customer's own numbers after week one.</p>
-<h2>How it decides</h2>
-<div class='wrap'><table>
-<tr><th>Flag</th><th>Rule</th><th>Why it matters</th></tr>
-<tr><td>Stalled</td><td>Someone outside the firm has not answered two follow-ups in 48 hours</td><td>More than half of the waiting in a search is follow-ups nobody answered, so a person should call or text</td></tr>
-<tr><td>Stalled</td><td>Waiting on the firm's own partner or recruiter for 24 hours</td><td>Internal waits are the easiest to fix and the most embarrassing to leave</td></tr>
-<tr><td>Stalled</td><td>Nothing sent to someone outside the firm for 30 hours while waiting on them</td><td>The 24-hour cadence was missed, which points at a product issue to reproduce and send to engineering</td></tr>
-<tr><td>Stalled</td><td>The scheduling agent has not acted on its turn for an hour</td><td>Something is stuck in the product, not with a person</td></tr>
-<tr><td>At risk</td><td>More than 12 rounds and still open</td><td>A public search-scheduling benchmark shows cancellations rising from 3.9% to 16.4% past twelve rounds</td></tr>
-<tr><td>At risk</td><td>The client has moved the meeting twice</td><td>Each move restarts the negotiation; firm backup slots stop the loop</td></tr>
-<tr><td>At risk</td><td>Waiting 24 hours on someone outside the firm</td><td>Worth watching before it becomes a stall</td></tr>
-</table></div>
-<p class='note'>Every threshold is a constant in <code>stallmon/rules.py</code> so it can be tuned per customer. The rules are
-checked in CI against 28 hand-labeled threads with <a href='https://github.com/pg2342-hub/golive-gate'>golive-gate</a>:
-every stalled thread must be caught, with at most one false alarm.</p>
-<p class='note'>Run it: <code>python -m stallmon report data/threads.jsonl data/users.json --as-of 2026-11-20T17:00:00Z</code></p>
-</main><!-- demo-chrome --><footer class="demo-foot"><span>A working build by <a href="https://pranavgudise.dev/">Pranav Gudise</a>. Synthetic or public data only.</span><a href="https://github.com/pg2342-hub/interview-stall-monitor">github.com/pg2342-hub/interview-stall-monitor</a></footer><!-- /demo-chrome -->
-</body></html>
+<div class="head">
+<h1 id="title"></h1>
+<p class="meta" id="meta"></p>
+<p class="lead" id="lead"></p>
+</div>
+
+<section class="board" id="report" aria-labelledby="verdict-h">
+  <div class="vline">
+    <h2 id="verdict-h"></h2>
+    <span class="gate" id="gate"></span>
+    <p id="takeaway"></p>
+  </div>
+  <div class="tally">
+    <div class="stack" id="stack" aria-hidden="true"></div>
+    <div class="counts" id="counts"></div>
+  </div>
+  <div class="week" id="week" aria-label="This week"></div>
+  <div class="trend" id="trend-box">
+    <h3 id="trend">Four-week trend</h3>
+    <p class="hint">The latest week is dark. Seats went live in two waves, so active users is shown against the seats live that week.</p>
+    <div class="sm" id="sm"></div>
+  </div>
+</section>
+
+<div class="layout">
+<div class="content">
+
+<h2 id="needs">Needs a person</h2>
+<p id="needs-sum"></p>
+<div class="seg" role="radiogroup" aria-label="Which threads to show">
+  <button type="button" role="radio" aria-checked="true" data-f="all"></button>
+  <button type="button" role="radio" aria-checked="false" data-f="stalled" tabindex="-1"></button>
+  <button type="button" role="radio" aria-checked="false" data-f="at_risk" tabindex="-1"></button>
+</div>
+<div id="actions"></div>
+<p class="note" id="split"></p>
+
+<h2 id="adoption">Adoption by practice</h2>
+<div class="prac" id="prac"></div>
+<p class="note">Health is green when at least 70% of seats were active and no more than 10% of the week's threads stalled, yellow at 40% and 25%, red otherwise. Stalled threads are counted as a share of the week's volume, so a busy practice is not punished for its size.</p>
+
+<h2 id="people">People to check in with</h2>
+<div id="quiet"></div>
+
+<h2 id="rules">How it decides</h2>
+<div class="scroll"><table>
+<thead><tr><th>Flag</th><th>Rule</th><th>Why it matters</th></tr></thead>
+<tbody>
+<tr><td><span class="sev stalled">stalled</span></td><td>Someone outside the firm has not answered two follow-ups in 48 hours</td><td>More than half of the waiting in a search is follow-ups nobody answered, so a person should call or text</td></tr>
+<tr><td><span class="sev stalled">stalled</span></td><td>Waiting on the firm's own partner or recruiter for 24 hours</td><td>Internal waits are the easiest to fix and the most embarrassing to leave</td></tr>
+<tr><td><span class="sev stalled">stalled</span></td><td>Nothing sent to someone outside the firm for 30 hours while waiting on them</td><td>The 24-hour cadence was missed, which points at a product issue to reproduce and send to engineering</td></tr>
+<tr><td><span class="sev stalled">stalled</span></td><td>The scheduling agent has not acted on its turn for an hour</td><td>Something is stuck in the product, not with a person</td></tr>
+<tr><td><span class="sev at_risk">at risk</span></td><td>More than 12 rounds and still open</td><td>A public search-scheduling benchmark shows cancellations rising from 3.9% to 16.4% past twelve rounds</td></tr>
+<tr><td><span class="sev at_risk">at risk</span></td><td>The client has moved the meeting twice</td><td>Each move restarts the negotiation; firm backup slots stop the loop</td></tr>
+<tr><td><span class="sev at_risk">at risk</span></td><td>Waiting 24 hours on someone outside the firm</td><td>Worth watching before it becomes a stall</td></tr>
+</tbody></table></div>
+<p class="note">Every threshold is a constant in <code>stallmon/rules.py</code> so it can be tuned per customer. The rules are checked in CI against 28 hand-labeled threads with <a href="https://github.com/pg2342-hub/golive-gate">golive-gate</a>: every stalled thread must be caught, with at most one false alarm. <a href="gate/index.html">Go-live gate report (28 labeled threads)</a>.</p>
+<p class="note" id="assume"></p>
+</div>
+
+<aside class="side" aria-label="About this build">
+  <nav aria-label="On this page"><a href="#report">This week</a><a href="#trend">Four-week trend</a><a href="#needs">Needs a person</a><a href="#adoption">Adoption by practice</a><a href="#people">People to check in with</a><a href="#rules">How it decides</a></nav>
+  <div><h3>Data</h3><p>This is the weekly report <code>stallmon</code> writes for one customer account, run on a made-up search firm: 18 seats in two practices, 168 synthetic scheduling threads over four weeks. Nothing here is real customer data.</p></div>
+  <div><h3>Run it yourself</h3><p>Python 3.10 or later. From the repo folder:</p><pre>pip install -e ".[dev]"
+python -m stallmon report data/threads.jsonl data/users.json --as-of 2026-11-20T17:00:00Z
+pytest -q</pre></div>
+  <div><h3>Go-live gate</h3><p><a href="gate/index.html">Gate report on 28 labeled threads</a></p></div>
+  <div><a class="pill" href="https://github.com/pg2342-hub/interview-stall-monitor">Code on GitHub</a></div>
+</aside>
+</div>
+</main>
+<script>
+const D = {"account": "Example Search Partners", "week_ending": "Nov 20, 2026", "headline": "45 meetings booked and 14.2 hours of coordination handed back this week; 8 stalled and 6 at-risk threads need a person.", "week": {"threads_started": 58, "booked": 45, "reschedules": 12, "cancelled": 5, "median_hours_to_book": 10.8, "booked_within_24h": 30, "active_users": 15, "live_seats": 18, "hours_returned": 14.2}, "trend": [{"end": "2026-10-30", "label": "Oct 30", "threads_started": 28, "booked": 14, "hours_returned": 4.5, "active_users": 7, "live_seats": 8}, {"end": "2026-11-06", "label": "Nov 6", "threads_started": 35, "booked": 35, "hours_returned": 9.2, "active_users": 7, "live_seats": 8}, {"end": "2026-11-13", "label": "Nov 13", "threads_started": 47, "booked": 41, "hours_returned": 12.5, "active_users": 15, "live_seats": 18}, {"end": "2026-11-20", "label": "Nov 20", "threads_started": 58, "booked": 45, "hours_returned": 14.2, "active_users": 15, "live_seats": 18}], "flagged": [{"thread": "T-0111", "search": "S-109", "practice": "Consumer", "owner": "Reese Pryce", "meeting": "candidate_interview", "rounds": 3, "flag": "stalled", "reason": "no_reply", "reasons": ["no_reply"], "next_step": "3 follow-ups to the candidate are unanswered after 480h. Ask Reese Pryce to call or text the candidate directly.", "waiting_on": "candidate", "waiting_hours": 480.3, "reason_label": "No reply after follow-ups", "meeting_label": "Candidate interview"}, {"thread": "T-0051", "search": "S-117", "practice": "Consumer", "owner": "Morgan Carver", "meeting": "candidate_interview", "rounds": 4, "flag": "stalled", "reason": "no_reply", "reasons": ["no_reply"], "next_step": "3 follow-ups to the candidate are unanswered after 339h. Ask Morgan Carver to call or text the candidate directly.", "waiting_on": "candidate", "waiting_hours": 339.0, "reason_label": "No reply after follow-ups", "meeting_label": "Candidate interview"}, {"thread": "T-0012", "search": "S-133", "practice": "Consumer", "owner": "Kendall Foster", "meeting": "candidate_interview", "rounds": 23, "flag": "stalled", "reason": "no_reply", "reasons": ["no_reply", "long_thread"], "next_step": "3 follow-ups to the candidate are unanswered after 87h. Ask Kendall Foster to call or text the candidate directly.", "waiting_on": "candidate", "waiting_hours": 86.6, "reason_label": "No reply after follow-ups", "meeting_label": "Candidate interview"}, {"thread": "T-0069", "search": "S-139", "practice": "Consumer", "owner": "Sage Ortiz", "meeting": "client_panel", "rounds": 4, "flag": "stalled", "reason": "no_reply", "reasons": ["no_reply"], "next_step": "2 follow-ups to the client are unanswered after 67h. Ask Sage Ortiz to call or text the client directly.", "waiting_on": "client", "waiting_hours": 67.0, "reason_label": "No reply after follow-ups", "meeting_label": "Client panel"}, {"thread": "T-0019", "search": "S-131", "practice": "Consumer", "owner": "Kendall Foster", "meeting": "candidate_interview", "rounds": 1, "flag": "stalled", "reason": "no_reply", "reasons": ["no_reply"], "next_step": "2 follow-ups to the candidate are unanswered after 49h. Ask Kendall Foster to call or text the candidate directly.", "waiting_on": "candidate", "waiting_hours": 48.7, "reason_label": "No reply after follow-ups", "meeting_label": "Candidate interview"}, {"thread": "T-0153", "search": "S-121", "practice": "Enterprise", "owner": "Casey Ellis", "meeting": "candidate_interview", "rounds": 1, "flag": "stalled", "reason": "no_reply", "reasons": ["no_reply"], "next_step": "2 follow-ups to the candidate are unanswered after 48h. Ask Casey Ellis to call or text the candidate directly.", "waiting_on": "candidate", "waiting_hours": 48.2, "reason_label": "No reply after follow-ups", "meeting_label": "Candidate interview"}, {"thread": "T-9002", "search": "S-131", "practice": "Enterprise", "owner": "Blake Keane", "meeting": "candidate_interview", "rounds": 1, "flag": "stalled", "reason": "missed_followup", "reasons": ["missed_followup"], "next_step": "Nothing has gone to the candidate in 40h, so the follow-up cadence was missed. Check the thread for a parsing or channel issue, reproduce it, and send engineering the thread id.", "waiting_on": "candidate", "waiting_hours": 39.9, "reason_label": "Follow-up cadence missed", "meeting_label": "Candidate interview"}, {"thread": "T-9001", "search": "S-120", "practice": "Consumer", "owner": "Devon Tate", "meeting": "client_panel", "rounds": 2, "flag": "stalled", "reason": "internal_wait", "reasons": ["internal_wait"], "next_step": "Waiting 31h on Devon Tate. Nudge them and offer to confirm the slot already proposed.", "waiting_on": "internal", "waiting_hours": 31.0, "reason_label": "Waiting on the firm", "meeting_label": "Client panel"}, {"thread": "T-0164", "search": "S-108", "practice": "Enterprise", "owner": "Morgan Pryce", "meeting": "client_panel", "rounds": 1, "flag": "at_risk", "reason": "slow_reply", "reasons": ["slow_reply"], "next_step": "Waiting 43h on the client. Watch it; the next follow-up is due.", "waiting_on": "client", "waiting_hours": 43.1, "reason_label": "Slow reply", "meeting_label": "Client panel"}, {"thread": "T-0131", "search": "S-111", "practice": "Enterprise", "owner": "Quinn Wells", "meeting": "candidate_interview", "rounds": 3, "flag": "at_risk", "reason": "slow_reply", "reasons": ["slow_reply"], "next_step": "Waiting 33h on the candidate. Watch it; the next follow-up is due.", "waiting_on": "candidate", "waiting_hours": 33.1, "reason_label": "Slow reply", "meeting_label": "Candidate interview"}, {"thread": "T-0157", "search": "S-106", "practice": "Enterprise", "owner": "Parker Carver", "meeting": "candidate_interview", "rounds": 17, "flag": "at_risk", "reason": "slow_reply", "reasons": ["slow_reply", "long_thread"], "next_step": "Waiting 27h on the candidate. Watch it; the next follow-up is due.", "waiting_on": "candidate", "waiting_hours": 27.3, "reason_label": "Slow reply", "meeting_label": "Candidate interview"}, {"thread": "T-0117", "search": "S-106", "practice": "Enterprise", "owner": "Logan Hayes", "meeting": "candidate_interview", "rounds": 1, "flag": "at_risk", "reason": "slow_reply", "reasons": ["slow_reply"], "next_step": "Waiting 25h on the candidate. Watch it; the next follow-up is due.", "waiting_on": "candidate", "waiting_hours": 25.3, "reason_label": "Slow reply", "meeting_label": "Candidate interview"}, {"thread": "T-9003", "search": "S-108", "practice": "Consumer", "owner": "Sage Ortiz", "meeting": "client_panel", "rounds": 15, "flag": "at_risk", "reason": "long_thread", "reasons": ["long_thread"], "next_step": "15 rounds and still open; cancellations run about 4x higher past 12 in a public search-scheduling benchmark. Suggest a quick call to lock a time.", "waiting_on": "client", "waiting_hours": 23.0, "reason_label": "Long thread", "meeting_label": "Client panel"}, {"thread": "T-9004", "search": "S-115", "practice": "Enterprise", "owner": "Finley Keane", "meeting": "candidate_interview", "rounds": 7, "flag": "at_risk", "reason": "client_moving", "reasons": ["client_moving"], "next_step": "The client has moved this 2 times. Give the candidate two firm backup slots so the next move does not restart the thread.", "waiting_on": "candidate", "waiting_hours": 19.9, "reason_label": "Client keeps moving it", "meeting_label": "Candidate interview"}], "stalled": 8, "at_risk": 6, "open_threads": 23, "waiting_split": [["outside the firm", 97], ["inside the firm", 3]], "practices": [{"practice": "Consumer", "seats": 8, "active": 6, "threads": 27, "open": 10, "flagged": 7, "stalled": 6, "active_share": 0.75, "health": "yellow"}, {"practice": "Enterprise", "seats": 10, "active": 9, "threads": 31, "open": 13, "flagged": 7, "stalled": 2, "active_share": 0.9, "health": "green"}], "people": [{"name": "Casey Irving", "practice": "Consumer", "live_from": "2026-10-25", "threads_this_week": 0, "last_thread": "", "status": "never started"}, {"name": "Blake Reid", "practice": "Enterprise", "live_from": "2026-11-08", "threads_this_week": 0, "last_thread": "", "status": "never started"}, {"name": "Reese Pryce", "practice": "Consumer", "live_from": "2026-10-25", "threads_this_week": 0, "last_thread": "2026-11-02", "status": "gone quiet"}, {"name": "Blake Ellis", "practice": "Consumer", "live_from": "2026-10-25", "threads_this_week": 5, "last_thread": "2026-11-19", "status": "active"}, {"name": "Blake Tate", "practice": "Consumer", "live_from": "2026-10-25", "threads_this_week": 2, "last_thread": "2026-11-16", "status": "active"}, {"name": "Devon Tate", "practice": "Consumer", "live_from": "2026-10-25", "threads_this_week": 5, "last_thread": "2026-11-19", "status": "active"}, {"name": "Kendall Foster", "practice": "Consumer", "live_from": "2026-10-25", "threads_this_week": 7, "last_thread": "2026-11-19", "status": "active"}, {"name": "Morgan Carver", "practice": "Consumer", "live_from": "2026-10-25", "threads_this_week": 5, "last_thread": "2026-11-20", "status": "active"}, {"name": "Sage Ortiz", "practice": "Consumer", "live_from": "2026-10-25", "threads_this_week": 3, "last_thread": "2026-11-18", "status": "active"}, {"name": "Avery Wells", "practice": "Enterprise", "live_from": "2026-11-08", "threads_this_week": 6, "last_thread": "2026-11-19", "status": "active"}, {"name": "Blake Keane", "practice": "Enterprise", "live_from": "2026-11-08", "threads_this_week": 3, "last_thread": "2026-11-19", "status": "active"}, {"name": "Casey Ellis", "practice": "Enterprise", "live_from": "2026-11-08", "threads_this_week": 2, "last_thread": "2026-11-19", "status": "active"}, {"name": "Finley Keane", "practice": "Enterprise", "live_from": "2026-11-08", "threads_this_week": 5, "last_thread": "2026-11-20", "status": "active"}, {"name": "Logan Hayes", "practice": "Enterprise", "live_from": "2026-11-08", "threads_this_week": 4, "last_thread": "2026-11-19", "status": "active"}, {"name": "Morgan Pryce", "practice": "Enterprise", "live_from": "2026-11-08", "threads_this_week": 2, "last_thread": "2026-11-18", "status": "active"}, {"name": "Parker Carver", "practice": "Enterprise", "live_from": "2026-11-08", "threads_this_week": 3, "last_thread": "2026-11-16", "status": "active"}, {"name": "Quinn Wells", "practice": "Enterprise", "live_from": "2026-11-08", "threads_this_week": 4, "last_thread": "2026-11-19", "status": "active"}, {"name": "Riley Vance", "practice": "Enterprise", "live_from": "2026-11-08", "threads_this_week": 2, "last_thread": "2026-11-19", "status": "active"}], "assumptions": {"minutes_per_booking": 15, "minutes_per_reschedule": 15}, "reasons": {"no_reply": "No reply after follow-ups", "missed_followup": "Follow-up cadence missed", "agent_idle": "Agent has not acted", "internal_wait": "Waiting on the firm", "slow_reply": "Slow reply", "long_thread": "Long thread", "client_moving": "Client keeps moving it"}, "as_of": "2026-11-20T17:00:00Z"};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const plural = (n,w,p) => `${n} ${n==1?w:(p||w+"s")}`;
+const W = D.week, F = D.flagged;
+document.getElementById("title").textContent = "Weekly scheduling report: " + D.account;
+document.getElementById("meta").textContent = "Week ending " + D.week_ending;
+document.getElementById("lead").textContent = "The weekly report stallmon writes for one customer account of an interview scheduling agent: what the agent handed back this week, and which threads a person should pick up.";
+
+// verdict
+const need = D.stalled + D.at_risk, ok = D.open_threads - need;
+document.getElementById("verdict-h").textContent = `${need} threads need a person`;
+document.getElementById("gate").textContent = `${D.stalled} STALLED`;
+document.getElementById("takeaway").textContent = D.headline;
+const KIND = [["stalled",D.stalled,"STALLED","a person should act today"],["at_risk",D.at_risk,"AT RISK","watch, the next follow-up is due"],["ok",ok,"ON TRACK","no flag"]];
+document.getElementById("stack").innerHTML = KIND.flatMap(k=>Array(k[1]).fill(`<i class="k-${k[0]}"></i>`)).join("");
+document.getElementById("counts").innerHTML = KIND.map(k=>`<div><b>${k[1]}</b><span class="lab"><i class="k-${k[0]}"></i>${k[2]}</span><span>${k[3]}</span></div>`).join("");
+document.querySelector(".tally").insertAdjacentHTML("afterbegin", `<p class="cap">${D.open_threads} open threads, one square each</p>`);
+
+// this week
+document.getElementById("week").innerHTML = [
+  [W.booked,"meetings booked"],[W.hours_returned,"hours of coordination handed back"],
+  [`${W.median_hours_to_book}<small>h</small>`,"median from request to booked"],
+  [`${W.booked_within_24h} <small>of ${W.booked}</small>`,"booked within 24 hours"],
+  [`${W.active_users} <small>of ${W.live_seats}</small>`,"live seats active"],
+  [W.cancelled,`cancelled, and ${W.reschedules} reschedules handled`]
+].map(s=>`<div><b>${s[0]}</b>${s[1]}</div>`).join("");
+
+// four-week trend: small multiples drawn to scale from zero
+function bars(key, label, fmt, maxv){
+  const T = D.trend, w = 240, h = 120, top = 18, base = h - 20, bw = 38, gap = (w - bw*T.length)/(T.length);
+  const mx = maxv || Math.max(...T.map(t=>t[key]));
+  const b = T.map((t,i)=>{
+    const x = gap/2 + i*(bw+gap), v = t[key], bh = (base-top)*v/mx, last = i==T.length-1;
+    const live = key=="active_users" ? `<rect x="${x}" y="${base-(base-top)*t.live_seats/mx}" width="${bw}" height="${(base-top)*t.live_seats/mx}" rx="3" fill="none" stroke="var(--ink-2)" stroke-dasharray="2 2"/>` : "";
+    return `${live}<rect x="${x}" y="${base-bh}" width="${bw}" height="${bh}" rx="3" fill="${last?"var(--ink)":"var(--green-wash)"}"/>`+
+      `<text class="v" x="${x+bw/2}" y="${base-(key=="active_users"?(base-top)*t.live_seats/mx:bh)-5}" text-anchor="middle">${fmt(t)}</text>`+
+      `<text x="${x+bw/2}" y="${h-4}" text-anchor="middle">${t.label}</text>`;
+  }).join("");
+  const last = D.trend[D.trend.length-1], first = D.trend[0];
+  return `<figure><figcaption><span>${label}</span><b>${fmt(last)}</b></figcaption><svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${label} by week: ${D.trend.map(t=>t.label+" "+fmt(t)).join(", ")}"><line x1="0" x2="${w}" y1="${base}" y2="${base}" stroke="var(--rule)"/>${b}</svg></figure>`;
+}
+document.getElementById("sm").innerHTML =
+  bars("threads_started","Threads started",t=>t.threads_started) +
+  bars("booked","Meetings booked",t=>t.booked) +
+  bars("hours_returned","Hours handed back",t=>t.hours_returned) +
+  bars("active_users","Active users of live seats",t=>`${t.active_users}/${t.live_seats}`, Math.max(...D.trend.map(t=>t.live_seats)));
+
+// needs a person, grouped by the action to take
+const GROUPS = [
+  ["no_reply","Call or text them directly","The recruiter who owns the thread picks up the phone."],
+  ["missed_followup","Send to engineering","Reproduce the thread and send engineering the thread id."],
+  ["agent_idle","Send to engineering","The agent is stuck on its own turn."],
+  ["internal_wait","Nudge someone at the firm","Offer to confirm the slot already proposed."],
+  ["slow_reply","Watch, the next follow-up is due",""],
+  ["long_thread","Lock a time on a quick call",""],
+  ["client_moving","Give firm backup slots",""]];
+let filt = "all";
+const segB = [...document.querySelectorAll(".seg button")];
+segB[0].textContent = `All ${F.length}`; segB[1].textContent = `Stalled ${D.stalled}`; segB[2].textContent = `At risk ${D.at_risk}`;
+function setF(f){ filt=f; segB.forEach(b=>{const on=b.dataset.f==f; b.setAttribute("aria-checked",String(on)); b.tabIndex=on?0:-1;}); renderActions(); }
+segB.forEach((b,i)=>{
+  b.addEventListener("click",()=>setF(b.dataset.f));
+  b.addEventListener("keydown",e=>{
+    if(!["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(e.key))return;
+    e.preventDefault(); const d=(e.key=="ArrowLeft"||e.key=="ArrowUp")?-1:1, n=segB[(i+d+segB.length)%segB.length]; setF(n.dataset.f); n.focus();
+  });
+});
+const owners = new Set(F.map(f=>f.owner)).size;
+document.getElementById("needs-sum").textContent = `${plural(F.length,"thread")} across ${owners} thread owners, stalled first. Each card is one kind of action.`;
+function renderActions(){
+  const rows = F.filter(f=>filt=="all"||f.flag==filt);
+  const seen = new Set();
+  const html = GROUPS.map(([reason,title,hint])=>{
+    const items = rows.filter(f=>f.reason==reason); if(!items.length) return "";
+    const flag = items[0].flag;
+    return `<div class="team"><div class="team-h"><h3>${esc(title)}</h3><p><span>${esc(D.reasons[reason])}</span><span class="sev ${flag}">${items.length} ${flag.replace("_"," ")}</span></p></div><ul class="todo">${items.map(f=>{
+      const wait = f.waiting_on ? `${Math.round(f.waiting_hours)}h on ${f.waiting_on}` : `${f.rounds} rounds`;
+      return `<li><span class="id">${esc(f.thread)}</span><span class="who"><b>${esc(f.owner)}</b><span>${esc(f.meeting_label)}, ${esc(f.practice)}</span></span><span class="msg">${esc(f.next_step)}</span><span class="wait">${esc(wait)}</span></li>`;}).join("")}</ul></div>`;
+  }).join("");
+  document.getElementById("actions").innerHTML = html || `<p class="done">Nothing stalled.</p>`;
+}
+renderActions();
+if (D.waiting_split.length) document.getElementById("split").textContent = "Of the hours open threads have spent waiting: " + D.waiting_split.map(([k,v])=>`${v}% ${k}`).join(", ") + ".";
+
+// adoption
+const quietBy = p => D.people.filter(x=>x.practice==p && x.status!="active");
+document.getElementById("prac").innerHTML = D.practices.map(p=>`<div class="pcard"><div class="top"><h3>${esc(p.practice)}</h3><span class="health ${p.health}">${p.health.toUpperCase()}</span></div>
+  <div class="seats" aria-hidden="true">${Array(p.seats).fill(0).map((_,i)=>`<i class="${i<p.active?"":"off"}"></i>`).join("")}</div>
+  <p class="cap">${p.active} of ${p.seats} live seats used the agent this week${quietBy(p.practice).length?`; not yet: ${quietBy(p.practice).map(x=>esc(x.name)).join(", ")}`:""}</p>
+  <div class="pnums"><span><b>${p.threads}</b>threads this week</span><span><b>${p.open}</b>open</span><span><b>${p.stalled}</b>stalled</span></div></div>`).join("");
+
+// people
+const quiet = D.people.filter(p=>p.status!="active");
+document.getElementById("quiet").innerHTML = quiet.length ?
+  `<div class="scroll"><table><thead><tr><th>Name</th><th>Practice</th><th>Status</th><th>Live since</th><th>Last thread</th></tr></thead><tbody>${quiet.map(p=>`<tr><td>${esc(p.name)}</td><td>${esc(p.practice)}</td><td>${esc(p.status)}</td><td class="mono">${esc(p.live_from)}</td><td class="mono">${esc(p.last_thread||"none")}</td></tr>`).join("")}</tbody></table></div>`
+  : `<p class="done">Everyone with a seat used the agent this week.</p>`;
+const A = D.assumptions;
+document.getElementById("assume").textContent = `Hours handed back counts ${A.minutes_per_booking} minutes per booked meeting and ${A.minutes_per_reschedule} per reschedule handled, the default in a public time-saved calculator for search firms. Swap in the customer's own numbers after week one.`;
+</script>
+<!-- demo-chrome --><footer class="demo-foot"><span>A working build by <a href="https://pranavgudise.dev/">Pranav Gudise</a>. Synthetic or public data only.</span><a href="https://github.com/pg2342-hub/interview-stall-monitor">github.com/pg2342-hub/interview-stall-monitor</a></footer><!-- /demo-chrome -->
+</body>
+</html>
